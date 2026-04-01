@@ -41,3 +41,17 @@ input {
 ::selection {
   background: rgba(249, 115, 22, 0.4);
 }
+
+@keyframes splash-load {
+  0% {
+    transform: translateX(-110%);
+  }
+
+  50% {
+    transform: translateX(110%);
+  }
+
+  100% {
+    transform: translateX(240%);
+  }
+}

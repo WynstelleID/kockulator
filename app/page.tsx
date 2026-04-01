@@ -1,5 +1,5 @@
-import { PtPtCalculator } from "@/components/ptpt-calculator";
+import { HomePageClient } from "@/components/home-page-client";
 
 export default function HomePage() {
-  return <PtPtCalculator />;
+  return <HomePageClient />;
 }

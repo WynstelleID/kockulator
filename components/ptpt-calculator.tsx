@@ -14,6 +14,7 @@ import {
   Users,
   Wallet,
 } from "lucide-react";
+import { SplashScreen } from "@/components/splash-screen";
 
 type SessionRecord = {
   id: string;
@@ -107,6 +108,8 @@ function Field({
 
 export function PtPtCalculator() {
   const [isMounted, setIsMounted] = useState(false);
+  const [showSplash, setShowSplash] = useState(true);
+  const [isNavigating, setIsNavigating] = useState(false);
   const [tubePrice, setTubePrice] = useState("135.000");
   const [roundedPrice, setRoundedPrice] = useState("13.000");
   const [usedShuttlecocks, setUsedShuttlecocks] = useState("6");
@@ -117,9 +120,16 @@ export function PtPtCalculator() {
 
   useEffect(() => {
     setIsMounted(true);
+    const splashTimer = window.setTimeout(() => {
+      setShowSplash(false);
+    }, 1200);
 
     const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return;
+    if (!raw) {
+      return () => {
+        window.clearTimeout(splashTimer);
+      };
+    }
 
     try {
       const parsed = JSON.parse(raw) as SessionRecord[];
@@ -129,6 +139,10 @@ export function PtPtCalculator() {
     } catch {
       window.localStorage.removeItem(STORAGE_KEY);
     }
+
+    return () => {
+      window.clearTimeout(splashTimer);
+    };
   }, []);
 
   const calculations = useMemo(() => {
@@ -202,8 +216,19 @@ export function PtPtCalculator() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-md flex-col px-4 pb-10 pt-5">
-      <section className="relative overflow-hidden rounded-4xl border border-white/10 bg-white/[0.07] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.35)] backdrop-blur-sm">
+    <>
+      {(showSplash || isNavigating) ? (
+        <SplashScreen
+          label={
+            isNavigating
+              ? "Membuka detail sesi badminton..."
+              : "Menyiapkan kalkulator patungan badminton..."
+          }
+        />
+      ) : null}
+
+      <main className="mx-auto flex min-h-screen w-full max-w-md flex-col px-4 pb-10 pt-5">
+        <section className="relative overflow-hidden rounded-4xl border border-white/10 bg-white/[0.07] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.35)] backdrop-blur-sm">
         <div className="absolute inset-x-0 top-0 h-28 bg-[radial-gradient(circle_at_top,rgba(249,115,22,0.22),transparent_70%)]" />
         <div className="relative">
           <div className="inline-flex items-center rounded-full border border-orange-400/25 bg-orange-500/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-orange-200">
@@ -219,7 +244,7 @@ export function PtPtCalculator() {
         </div>
       </section>
 
-      <section className="mt-5 grid gap-4">
+        <section className="mt-5 grid gap-4">
         <Field
           label="Harga 1 slop"
           hint="1 slop = 12 shuttlecock"
@@ -281,9 +306,9 @@ export function PtPtCalculator() {
           value={players}
           onChange={setPlayers}
         />
-      </section>
+        </section>
 
-      <section className="mt-5 rounded-4xl border border-orange-400/20 bg-[linear-gradient(180deg,rgba(249,115,22,0.18),rgba(255,255,255,0.04))] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.35)]">
+        <section className="mt-5 rounded-4xl border border-orange-400/20 bg-[linear-gradient(180deg,rgba(249,115,22,0.18),rgba(255,255,255,0.04))] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.35)]">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-orange-200/85">
@@ -322,9 +347,9 @@ export function PtPtCalculator() {
             strong
           />
         </div>
-      </section>
+        </section>
 
-      <section className="mt-5 rounded-4xl border border-white/10 bg-white/[0.07] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.3)] backdrop-blur-sm">
+        <section className="mt-5 rounded-4xl border border-white/10 bg-white/[0.07] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.3)] backdrop-blur-sm">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <span className="rounded-2xl bg-white/8 p-2 text-orange-300">
@@ -386,6 +411,7 @@ export function PtPtCalculator() {
                   <div className="mt-4 flex items-center justify-between gap-3">
                     <Link
                       href={`/history/${entry.id}`}
+                      onClick={() => setIsNavigating(true)}
                       className="inline-flex items-center gap-2 rounded-full border border-orange-400/20 bg-orange-500/10 px-3 py-1.5 text-xs font-semibold text-orange-200"
                     >
                       <ExternalLink className="size-3.5" />
@@ -405,12 +431,13 @@ export function PtPtCalculator() {
             })
           )}
         </div>
-      </section>
+        </section>
 
-      <footer className="mt-6 pb-4 text-center text-xs uppercase tracking-[0.2em] text-white/40">
-        Created by dandi setiyawan
-      </footer>
-    </main>
+        <footer className="mt-6 pb-4 text-center text-xs uppercase tracking-[0.2em] text-white/40">
+          Created by dandi setiyawan
+        </footer>
+      </main>
+    </>
   );
 }
 

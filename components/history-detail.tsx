@@ -12,6 +12,7 @@ import {
   Users,
   Wallet,
 } from "lucide-react";
+import { SplashScreen } from "@/components/splash-screen";
 
 type SessionRecord = {
   id: string;
@@ -47,13 +48,21 @@ function formatNumber(value: number) {
 
 export function HistoryDetail({ id }: { id: string }) {
   const [isMounted, setIsMounted] = useState(false);
+  const [showSplash, setShowSplash] = useState(true);
   const [record, setRecord] = useState<SessionRecord | null>(null);
 
   useEffect(() => {
     setIsMounted(true);
+    const splashTimer = window.setTimeout(() => {
+      setShowSplash(false);
+    }, 900);
 
     const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return;
+    if (!raw) {
+      return () => {
+        window.clearTimeout(splashTimer);
+      };
+    }
 
     try {
       const parsed = JSON.parse(raw) as SessionRecord[];
@@ -63,26 +72,14 @@ export function HistoryDetail({ id }: { id: string }) {
     } catch {
       setRecord(null);
     }
+
+    return () => {
+      window.clearTimeout(splashTimer);
+    };
   }, [id]);
 
-  if (!isMounted) {
-    return (
-      <main className="mx-auto flex min-h-screen w-full max-w-md flex-col px-4 pb-10 pt-5">
-        <Link
-          href="/"
-          className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/6 px-4 py-2 text-sm font-semibold text-white"
-        >
-          <ArrowLeft className="size-4" />
-          Kembali
-        </Link>
-        <section className="mt-5 rounded-4xl border border-white/10 bg-white/[0.07] p-5 text-white shadow-[0_24px_80px_rgba(0,0,0,0.35)]">
-          <h1 className="text-2xl font-black">Memuat detail sesi</h1>
-          <p className="mt-3 text-sm leading-6 text-white/60">
-            Menyiapkan data riwayat dari device ini...
-          </p>
-        </section>
-      </main>
-    );
+  if (!isMounted || showSplash) {
+    return <SplashScreen label="Membuka detail sesi badminton..." />;
   }
 
   if (!record) {

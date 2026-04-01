@@ -1,4 +1,4 @@
-import { HistoryDetail } from "@/components/history-detail";
+import { HistoryDetailClient } from "@/components/history-detail-client";
 
 export default async function HistoryDetailPage({
   params,
@@ -7,5 +7,5 @@ export default async function HistoryDetailPage({
 }) {
   const { id } = await params;
 
-  return <HistoryDetail id={id} />;
+  return <HistoryDetailClient id={id} />;
 }
