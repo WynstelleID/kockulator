@@ -5,6 +5,7 @@ import type { HTMLAttributes, ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 import {
   Building2,
+  Check,
   Clock3,
   Feather,
   ExternalLink,
@@ -23,9 +24,12 @@ type SessionRecord = {
   autoPricePerCock: number;
   roundedPricePerCock: number;
   usedShuttlecocks: number;
+  isShuttlecockSponsored: boolean;
   courtFeePerHour: number;
   hoursPlayed: number;
   players: number;
+  isPerPlayerRounded: boolean;
+  baseCostPerPlayer: number;
   totalCourtCost: number;
   totalShuttlecockCost: number;
   totalSessionCost: number;
@@ -106,6 +110,46 @@ function Field({
   );
 }
 
+function ToggleCard({
+  label,
+  hint,
+  checked,
+  onChange,
+}: {
+  label: string;
+  hint: string;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+}) {
+  return (
+    <label className="flex items-center justify-between gap-4 rounded-[28px] border border-white/10 bg-white/6 p-4 shadow-[0_16px_40px_rgba(0,0,0,0.22)] backdrop-blur-sm">
+      <div>
+        <p className="text-sm font-semibold text-white">{label}</p>
+        <p className="mt-1 text-xs leading-5 text-white/[0.55]">{hint}</p>
+      </div>
+      <span
+        className={`flex h-7 w-12 items-center rounded-full p-1 transition ${
+          checked ? "bg-orange-500" : "bg-white/10"
+        }`}
+      >
+        <span
+          className={`flex size-5 items-center justify-center rounded-full bg-white text-neutral-950 transition ${
+            checked ? "translate-x-5" : "translate-x-0"
+          }`}
+        >
+          {checked ? <Check className="size-3.5" /> : null}
+        </span>
+      </span>
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(event) => onChange(event.target.checked)}
+        className="sr-only"
+      />
+    </label>
+  );
+}
+
 export function PtPtCalculator() {
   const [isMounted, setIsMounted] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
@@ -113,9 +157,11 @@ export function PtPtCalculator() {
   const [tubePrice, setTubePrice] = useState("135.000");
   const [roundedPrice, setRoundedPrice] = useState("13.000");
   const [usedShuttlecocks, setUsedShuttlecocks] = useState("6");
+  const [isShuttlecockSponsored, setIsShuttlecockSponsored] = useState(false);
   const [courtFeePerHour, setCourtFeePerHour] = useState("45.000");
   const [hoursPlayed, setHoursPlayed] = useState("2");
   const [players, setPlayers] = useState("12");
+  const [isPerPlayerRounded, setIsPerPlayerRounded] = useState(false);
   const [history, setHistory] = useState<SessionRecord[]>([]);
 
   useEffect(() => {
@@ -155,19 +201,27 @@ export function PtPtCalculator() {
     const hourlyCourtFee = toSafeNumber(courtFeePerHour);
     const totalHours = toSafeNumber(hoursPlayed);
     const totalPlayers = Math.max(toSafeNumber(players), 1);
-    const totalShuttlecockCost = used * roundedPricePerCock;
+    const totalShuttlecockCost = isShuttlecockSponsored
+      ? 0
+      : used * roundedPricePerCock;
     const totalCourtCost = hourlyCourtFee * totalHours;
     const totalSessionCost = totalShuttlecockCost + totalCourtCost;
-    const costPerPlayer = totalSessionCost / totalPlayers;
+    const baseCostPerPlayer = totalSessionCost / totalPlayers;
+    const costPerPlayer = isPerPlayerRounded
+      ? Math.ceil(baseCostPerPlayer / 1000) * 1000
+      : baseCostPerPlayer;
 
     return {
       shuttlecockTubePrice,
       autoPricePerCock,
       roundedPricePerCock,
       used,
+      isShuttlecockSponsored,
       hourlyCourtFee,
       totalHours,
       totalPlayers,
+      isPerPlayerRounded,
+      baseCostPerPlayer,
       totalShuttlecockCost,
       totalCourtCost,
       totalSessionCost,
@@ -177,9 +231,11 @@ export function PtPtCalculator() {
     tubePrice,
     roundedPrice,
     usedShuttlecocks,
+    isShuttlecockSponsored,
     courtFeePerHour,
     hoursPlayed,
     players,
+    isPerPlayerRounded,
   ]);
 
   function persist(nextHistory: SessionRecord[]) {
@@ -195,9 +251,12 @@ export function PtPtCalculator() {
       autoPricePerCock: calculations.autoPricePerCock,
       roundedPricePerCock: calculations.roundedPricePerCock,
       usedShuttlecocks: calculations.used,
+      isShuttlecockSponsored: calculations.isShuttlecockSponsored,
       courtFeePerHour: calculations.hourlyCourtFee,
       hoursPlayed: calculations.totalHours,
       players: calculations.totalPlayers,
+      isPerPlayerRounded: calculations.isPerPlayerRounded,
+      baseCostPerPlayer: calculations.baseCostPerPlayer,
       totalCourtCost: calculations.totalCourtCost,
       totalShuttlecockCost: calculations.totalShuttlecockCost,
       totalSessionCost: calculations.totalSessionCost,
@@ -282,6 +341,12 @@ export function PtPtCalculator() {
           value={usedShuttlecocks}
           onChange={setUsedShuttlecocks}
         />
+        <ToggleCard
+          label="Kok dibayarin"
+          hint="Jika dicentang, biaya shuttlecock dianggap Rp0 dan tidak ikut masuk total sesi."
+          checked={isShuttlecockSponsored}
+          onChange={setIsShuttlecockSponsored}
+        />
         <Field
           label="Biaya lapangan per jam"
           hint="Masukkan tarif sewa per jam"
@@ -305,6 +370,12 @@ export function PtPtCalculator() {
           icon={<Users className="size-5" />}
           value={players}
           onChange={setPlayers}
+        />
+        <ToggleCard
+          label="Bulatkan total per orang"
+          hint="Jika dicentang, hasil patungan dibulatkan ke atas ke kelipatan Rp1.000."
+          checked={isPerPlayerRounded}
+          onChange={setIsPerPlayerRounded}
         />
         </section>
 
@@ -332,7 +403,11 @@ export function PtPtCalculator() {
         <div className="mt-5 grid gap-3 rounded-[28px] border border-white/10 bg-black/30 p-4">
           <SummaryRow
             label="Biaya kok"
-            value={`${formatNumber(calculations.used)} x ${formatCurrency(calculations.roundedPricePerCock)}`}
+            value={
+              calculations.isShuttlecockSponsored
+                ? "Dibayarin"
+                : `${formatNumber(calculations.used)} x ${formatCurrency(calculations.roundedPricePerCock)}`
+            }
             total={formatCurrency(calculations.totalShuttlecockCost)}
           />
           <SummaryRow
@@ -345,6 +420,15 @@ export function PtPtCalculator() {
             value={`${formatNumber(calculations.totalPlayers)} pemain`}
             total={formatCurrency(calculations.totalSessionCost)}
             strong
+          />
+          <SummaryRow
+            label="Patungan per orang"
+            value={
+              calculations.isPerPlayerRounded
+                ? `Base ${formatCurrency(calculations.baseCostPerPlayer)} dibulatkan`
+                : "Tanpa pembulatan"
+            }
+            total={formatCurrency(calculations.costPerPlayer)}
           />
         </div>
         </section>

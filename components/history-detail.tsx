@@ -21,9 +21,12 @@ type SessionRecord = {
   autoPricePerCock: number;
   roundedPricePerCock: number;
   usedShuttlecocks: number;
+  isShuttlecockSponsored: boolean;
   courtFeePerHour: number;
   hoursPlayed: number;
   players: number;
+  isPerPlayerRounded: boolean;
+  baseCostPerPlayer: number;
   totalCourtCost: number;
   totalShuttlecockCost: number;
   totalSessionCost: number;
@@ -147,7 +150,7 @@ export function HistoryDetail({ id }: { id: string }) {
           <DetailRow
             icon={<Feather className="size-4" />}
             label="Kok terpakai"
-            value={`${formatNumber(record.usedShuttlecocks)} pcs`}
+            value={`${formatNumber(record.usedShuttlecocks)} pcs${record.isShuttlecockSponsored ? " (dibayarin)" : ""}`}
           />
           <DetailRow
             icon={<Landmark className="size-4" />}
@@ -173,6 +176,16 @@ export function HistoryDetail({ id }: { id: string }) {
             icon={<Landmark className="size-4" />}
             label="Total biaya lapangan"
             value={formatCurrency(record.totalCourtCost)}
+          />
+          <DetailRow
+            icon={<Users className="size-4" />}
+            label="Base per pemain"
+            value={formatCurrency(record.baseCostPerPlayer ?? record.costPerPlayer)}
+          />
+          <DetailRow
+            icon={<Users className="size-4" />}
+            label="Rounding per pemain"
+            value={record.isPerPlayerRounded ? "Aktif, dibulatkan ke atas" : "Tidak aktif"}
           />
           <DetailRow
             icon={<Users className="size-4" />}

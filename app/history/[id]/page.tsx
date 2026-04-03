@@ -1,11 +1,14 @@
-import { HistoryDetailClient } from "@/components/history-detail-client";
+"use client";
 
-export default async function HistoryDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
+import { useParams } from "next/navigation";
+import { HistoryDetail } from "@/components/history-detail";
 
-  return <HistoryDetailClient id={id} />;
+export default function HistoryDetailPage() {
+  const params = useParams<{ id: string }>();
+
+  if (!params?.id) {
+    return null;
+  }
+
+  return <HistoryDetail id={params.id} />;
 }
