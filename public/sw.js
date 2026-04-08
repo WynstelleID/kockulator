@@ -1,5 +1,9 @@
-const CACHE_NAME = "kockulator-v1";
-const APP_SHELL = ["/", "/manifest.webmanifest", "/icons/icon-192.svg", "/icons/icon-512.svg"];
+const CACHE_NAME = "kockulator-v2";
+const APP_SHELL = [
+  "/manifest.webmanifest",
+  "/icons/icon-192.svg",
+  "/icons/icon-512.svg",
+];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -24,9 +28,25 @@ self.addEventListener("fetch", (event) => {
   const requestUrl = new URL(event.request.url);
   if (!requestUrl.protocol.startsWith("http")) return;
 
+  // Always prefer the network for page navigations so new Netlify deploys
+  // show up immediately without requiring users to clear cache manually.
+  if (event.request.mode === "navigate") {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => response)
+        .catch(() => caches.match("/") || caches.match("/manifest.webmanifest"))
+    );
+    return;
+  }
+
+  const isStaticAsset =
+    requestUrl.pathname.startsWith("/_next/static/") ||
+    requestUrl.pathname.startsWith("/icons/") ||
+    requestUrl.pathname === "/manifest.webmanifest";
+
   event.respondWith(
     caches.match(event.request).then((cached) => {
-      if (cached) return cached;
+      if (cached && isStaticAsset) return cached;
 
       return fetch(event.request)
         .then((response) => {
@@ -34,16 +54,19 @@ self.addEventListener("fetch", (event) => {
             return response;
           }
 
-          const cloned = response.clone();
-          caches
-            .open(CACHE_NAME)
-            .then((cache) => cache.put(event.request, cloned))
-            .catch(() => {
-              // Ignore unsupported schemes such as browser extension assets.
-            });
+          if (isStaticAsset) {
+            const cloned = response.clone();
+            caches
+              .open(CACHE_NAME)
+              .then((cache) => cache.put(event.request, cloned))
+              .catch(() => {
+                // Ignore unsupported schemes such as browser extension assets.
+              });
+          }
+
           return response;
         })
-        .catch(() => caches.match("/"));
+        .catch(() => cached);
     })
   );
 });
