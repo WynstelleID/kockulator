@@ -155,7 +155,7 @@ export function PtPtCalculator() {
   const [showSplash, setShowSplash] = useState(true);
   const [isNavigating, setIsNavigating] = useState(false);
   const [tubePrice, setTubePrice] = useState("135.000");
-  const [roundedPrice, setRoundedPrice] = useState("13.000");
+  const [roundedPrice, setRoundedPrice] = useState("0");
   const [usedShuttlecocks, setUsedShuttlecocks] = useState("6");
   const [isShuttlecockSponsored, setIsShuttlecockSponsored] = useState(false);
   const [courtFeePerHour, setCourtFeePerHour] = useState("45.000");
@@ -276,7 +276,7 @@ export function PtPtCalculator() {
 
   return (
     <>
-      {(showSplash || isNavigating) ? (
+      {showSplash || isNavigating ? (
         <SplashScreen
           label={
             isNavigating
@@ -288,233 +288,232 @@ export function PtPtCalculator() {
 
       <main className="mx-auto flex min-h-screen w-full max-w-md flex-col px-4 pb-10 pt-5">
         <section className="relative overflow-hidden rounded-4xl border border-white/10 bg-white/[0.07] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.35)] backdrop-blur-sm">
-        <div className="absolute inset-x-0 top-0 h-28 bg-[radial-gradient(circle_at_top,rgba(249,115,22,0.22),transparent_70%)]" />
-        <div className="relative">
-          <div className="inline-flex items-center rounded-full border border-orange-400/25 bg-orange-500/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-orange-200">
-            Badminton PWA
+          <div className="absolute inset-x-0 top-0 h-28 bg-[radial-gradient(circle_at_top,rgba(249,115,22,0.22),transparent_70%)]" />
+          <div className="relative">
+            <div className="inline-flex items-center rounded-full border border-orange-400/25 bg-orange-500/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-orange-200">
+              Badminton
+            </div>
+            <h1 className="mt-4 text-3xl font-black tracking-tight text-white">
+              Kockulator PT-PT
+            </h1>
+            <p className="mt-3 max-w-xs text-sm leading-6 text-white/65">
+              Buat ngitung patungan sesi badminton biar adil dan transparan.
+            </p>
           </div>
-          <h1 className="mt-4 text-3xl font-black tracking-tight text-white">
-            Kockulator PT-PT
-          </h1>
-          <p className="mt-3 max-w-xs text-sm leading-6 text-white/65">
-            Hitung patungan lapangan dan kok dengan angka besar, kontras tinggi,
-            dan gampang dibaca di tengah hall.
-          </p>
-        </div>
-      </section>
+        </section>
 
         <section className="mt-5 grid gap-4">
-        <Field
-          label="Harga 1 slop"
-          hint="1 slop = 12 shuttlecock"
-          icon={<Feather className="size-5" />}
-          value={tubePrice}
-          onChange={(value) => setTubePrice(formatIntegerInput(value))}
-          type="text"
-          inputMode="numeric"
-        />
-        <div className="rounded-[28px] border border-white/10 bg-linear-to-br from-white/[0.07] to-white/4 p-4 shadow-[0_16px_40px_rgba(0,0,0,0.2)]">
-          <p className="text-sm font-semibold text-white">
-            Harga per kok otomatis
-          </p>
-          <p className="mt-2 text-3xl font-black text-orange-300">
-            {formatCurrency(calculations.autoPricePerCock)}
-          </p>
-          <p className="mt-2 text-xs leading-5 text-white/50">
-            Rumus: harga slop / 12. Kamu bisa override di field bawah kalau
-            ingin dibulatkan manual.
-          </p>
-        </div>
-        <Field
-          label="Harga per kok dibulatkan"
-          hint="Kosongkan atau isi 0 untuk pakai harga otomatis"
-          icon={<Wallet className="size-5" />}
-          value={roundedPrice}
-          onChange={(value) => setRoundedPrice(formatIntegerInput(value))}
-          type="text"
-          inputMode="numeric"
-        />
-        <Field
-          label="Jumlah kok terpakai"
-          hint="Dipakai untuk menghitung total biaya shuttlecock"
-          icon={<Feather className="size-5" />}
-          value={usedShuttlecocks}
-          onChange={setUsedShuttlecocks}
-        />
-        <ToggleCard
-          label="Kok dibayarin"
-          hint="Jika dicentang, biaya shuttlecock dianggap Rp0 dan tidak ikut masuk total sesi."
-          checked={isShuttlecockSponsored}
-          onChange={setIsShuttlecockSponsored}
-        />
-        <Field
-          label="Biaya lapangan per jam"
-          hint="Masukkan tarif sewa per jam"
-          icon={<Building2 className="size-5" />}
-          value={courtFeePerHour}
-          onChange={(value) => setCourtFeePerHour(formatIntegerInput(value))}
-          type="text"
-          inputMode="numeric"
-        />
-        <Field
-          label="Total jam main"
-          hint="Mendukung angka desimal bila perlu"
-          icon={<Clock3 className="size-5" />}
-          value={hoursPlayed}
-          onChange={setHoursPlayed}
-          step="0.5"
-        />
-        <Field
-          label="Jumlah pemain"
-          hint="Biaya total akan dibagi rata"
-          icon={<Users className="size-5" />}
-          value={players}
-          onChange={setPlayers}
-        />
-        <ToggleCard
-          label="Bulatkan total per orang"
-          hint="Jika dicentang, hasil patungan dibulatkan ke atas ke kelipatan Rp1.000."
-          checked={isPerPlayerRounded}
-          onChange={setIsPerPlayerRounded}
-        />
+          <Field
+            label="Harga 1 slop"
+            hint="1 slop = 12 shuttlecock"
+            icon={<Feather className="size-5" />}
+            value={tubePrice}
+            onChange={(value) => setTubePrice(formatIntegerInput(value))}
+            type="text"
+            inputMode="numeric"
+          />
+          <div className="rounded-[28px] border border-white/10 bg-linear-to-br from-white/[0.07] to-white/4 p-4 shadow-[0_16px_40px_rgba(0,0,0,0.2)]">
+            <p className="text-sm font-semibold text-white">
+              Harga per kok otomatis
+            </p>
+            <p className="mt-2 text-3xl font-black text-orange-300">
+              {formatCurrency(calculations.autoPricePerCock)}
+            </p>
+            <p className="mt-2 text-xs leading-5 text-white/50">
+              Rumus: harga slop / 12. Kamu bisa override di field bawah kalau
+              ingin dibulatkan manual.
+            </p>
+          </div>
+          <Field
+            label="Harga per kok dibulatkan"
+            hint="Kosongkan atau isi 0 untuk pakai harga otomatis"
+            icon={<Wallet className="size-5" />}
+            value={roundedPrice}
+            onChange={(value) => setRoundedPrice(formatIntegerInput(value))}
+            type="text"
+            inputMode="numeric"
+          />
+          <Field
+            label="Jumlah kok terpakai"
+            hint="Dipakai untuk menghitung total biaya shuttlecock"
+            icon={<Feather className="size-5" />}
+            value={usedShuttlecocks}
+            onChange={setUsedShuttlecocks}
+          />
+          <ToggleCard
+            label="Kok dibayarin"
+            hint="Jika dicentang, biaya shuttlecock dianggap Rp0 dan tidak ikut masuk total sesi."
+            checked={isShuttlecockSponsored}
+            onChange={setIsShuttlecockSponsored}
+          />
+          <Field
+            label="Biaya lapangan per jam"
+            hint="Masukkan tarif sewa per jam"
+            icon={<Building2 className="size-5" />}
+            value={courtFeePerHour}
+            onChange={(value) => setCourtFeePerHour(formatIntegerInput(value))}
+            type="text"
+            inputMode="numeric"
+          />
+          <Field
+            label="Total jam main"
+            hint="Mendukung angka desimal bila perlu"
+            icon={<Clock3 className="size-5" />}
+            value={hoursPlayed}
+            onChange={setHoursPlayed}
+            step="0.5"
+          />
+          <Field
+            label="Jumlah pemain"
+            hint="Biaya total akan dibagi rata"
+            icon={<Users className="size-5" />}
+            value={players}
+            onChange={setPlayers}
+          />
+          <ToggleCard
+            label="Bulatkan total per orang"
+            hint="Jika dicentang, hasil patungan dibulatkan ke atas ke kelipatan Rp1.000."
+            checked={isPerPlayerRounded}
+            onChange={setIsPerPlayerRounded}
+          />
         </section>
 
         <section className="mt-5 rounded-4xl border border-orange-400/20 bg-[linear-gradient(180deg,rgba(249,115,22,0.18),rgba(255,255,255,0.04))] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.35)]">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-orange-200/85">
-              Real-time Result
-            </p>
-            <p className="mt-2 text-4xl font-black text-white">
-              {formatCurrency(calculations.costPerPlayer)}
-            </p>
-            <p className="mt-2 text-sm text-white/70">Per pemain</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-orange-200/85">
+                Real-time Result
+              </p>
+              <p className="mt-2 text-4xl font-black text-white">
+                {formatCurrency(calculations.costPerPlayer)}
+              </p>
+              <p className="mt-2 text-sm text-white/70">Per pemain</p>
+            </div>
+            <button
+              type="button"
+              onClick={saveSession}
+              className="inline-flex h-12 items-center gap-2 rounded-2xl bg-white px-4 text-sm font-bold text-neutral-950 shadow-[0_12px_30px_rgba(255,255,255,0.15)] transition hover:scale-[1.01] active:scale-[0.99]"
+            >
+              <Save className="size-4" />
+              Save Session
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={saveSession}
-            className="inline-flex h-12 items-center gap-2 rounded-2xl bg-white px-4 text-sm font-bold text-neutral-950 shadow-[0_12px_30px_rgba(255,255,255,0.15)] transition hover:scale-[1.01] active:scale-[0.99]"
-          >
-            <Save className="size-4" />
-            Save Session
-          </button>
-        </div>
 
-        <div className="mt-5 grid gap-3 rounded-[28px] border border-white/10 bg-black/30 p-4">
-          <SummaryRow
-            label="Biaya kok"
-            value={
-              calculations.isShuttlecockSponsored
-                ? "Dibayarin"
-                : `${formatNumber(calculations.used)} x ${formatCurrency(calculations.roundedPricePerCock)}`
-            }
-            total={formatCurrency(calculations.totalShuttlecockCost)}
-          />
-          <SummaryRow
-            label="Biaya lapangan"
-            value={`${formatCurrency(calculations.hourlyCourtFee)} x ${formatNumber(calculations.totalHours)} jam`}
-            total={formatCurrency(calculations.totalCourtCost)}
-          />
-          <SummaryRow
-            label="Total sesi"
-            value={`${formatNumber(calculations.totalPlayers)} pemain`}
-            total={formatCurrency(calculations.totalSessionCost)}
-            strong
-          />
-          <SummaryRow
-            label="Patungan per orang"
-            value={
-              calculations.isPerPlayerRounded
-                ? `Base ${formatCurrency(calculations.baseCostPerPlayer)} dibulatkan`
-                : "Tanpa pembulatan"
-            }
-            total={formatCurrency(calculations.costPerPlayer)}
-          />
-        </div>
+          <div className="mt-5 grid gap-3 rounded-[28px] border border-white/10 bg-black/30 p-4">
+            <SummaryRow
+              label="Biaya kok"
+              value={
+                calculations.isShuttlecockSponsored
+                  ? "Dibayarin"
+                  : `${formatNumber(calculations.used)} x ${formatCurrency(calculations.roundedPricePerCock)}`
+              }
+              total={formatCurrency(calculations.totalShuttlecockCost)}
+            />
+            <SummaryRow
+              label="Biaya lapangan"
+              value={`${formatCurrency(calculations.hourlyCourtFee)} x ${formatNumber(calculations.totalHours)} jam`}
+              total={formatCurrency(calculations.totalCourtCost)}
+            />
+            <SummaryRow
+              label="Total sesi"
+              value={`${formatNumber(calculations.totalPlayers)} pemain`}
+              total={formatCurrency(calculations.totalSessionCost)}
+              strong
+            />
+            <SummaryRow
+              label="Patungan per orang"
+              value={
+                calculations.isPerPlayerRounded
+                  ? `Base ${formatCurrency(calculations.baseCostPerPlayer)} dibulatkan`
+                  : "Tanpa pembulatan"
+              }
+              total={formatCurrency(calculations.costPerPlayer)}
+            />
+          </div>
         </section>
 
         <section className="mt-5 rounded-4xl border border-white/10 bg-white/[0.07] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.3)] backdrop-blur-sm">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <span className="rounded-2xl bg-white/8 p-2 text-orange-300">
-              <History className="size-5" />
-            </span>
-            <div>
-              <h2 className="text-lg font-bold text-white">History</h2>
-              <p className="text-sm text-white/[0.55]">
-                Tersimpan lokal di device ini
-              </p>
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <span className="rounded-2xl bg-white/8 p-2 text-orange-300">
+                <History className="size-5" />
+              </span>
+              <div>
+                <h2 className="text-lg font-bold text-white">History</h2>
+                <p className="text-sm text-white/[0.55]">
+                  Tersimpan lokal di device ini
+                </p>
+              </div>
             </div>
+            <button
+              type="button"
+              onClick={clearHistory}
+              disabled={history.length === 0}
+              className="text-sm font-semibold text-red-300 transition disabled:cursor-not-allowed disabled:text-white/25"
+            >
+              Clear All
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={clearHistory}
-            disabled={history.length === 0}
-            className="text-sm font-semibold text-red-300 transition disabled:cursor-not-allowed disabled:text-white/25"
-          >
-            Clear All
-          </button>
-        </div>
 
-        <div className="mt-4 grid gap-3">
-          {!isMounted ? (
-            <div className="rounded-3xl border border-dashed border-white/12 bg-black/20 p-4 text-sm leading-6 text-white/50">
-              Memuat riwayat sesi...
-            </div>
-          ) : history.length === 0 ? (
-            <div className="rounded-3xl border border-dashed border-white/12 bg-black/20 p-4 text-sm leading-6 text-white/50">
-              Belum ada sesi tersimpan. Simpan kalkulasi pertama untuk melihat
-              riwayat dan detailnya di sini.
-            </div>
-          ) : (
-            history.map((entry) => {
-              return (
-                <div
-                  key={entry.id}
-                  className="rounded-3xl border border-white/10 bg-black/20 p-4 text-left transition"
-                >
-                  <div className="w-full text-left">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="text-sm font-semibold text-white">
-                          {new Intl.DateTimeFormat("id-ID", {
-                            dateStyle: "medium",
-                            timeStyle: "short",
-                            timeZone: "Asia/Jakarta",
-                          }).format(new Date(entry.savedAt))}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-base font-black text-orange-300">
-                          {formatCurrency(entry.totalSessionCost)}
-                        </p>
-                        <p className="text-xs text-white/45">total biaya</p>
+          <div className="mt-4 grid gap-3">
+            {!isMounted ? (
+              <div className="rounded-3xl border border-dashed border-white/12 bg-black/20 p-4 text-sm leading-6 text-white/50">
+                Memuat riwayat sesi...
+              </div>
+            ) : history.length === 0 ? (
+              <div className="rounded-3xl border border-dashed border-white/12 bg-black/20 p-4 text-sm leading-6 text-white/50">
+                Belum ada sesi tersimpan. Simpan kalkulasi pertama untuk melihat
+                riwayat dan detailnya di sini.
+              </div>
+            ) : (
+              history.map((entry) => {
+                return (
+                  <div
+                    key={entry.id}
+                    className="rounded-3xl border border-white/10 bg-black/20 p-4 text-left transition"
+                  >
+                    <div className="w-full text-left">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-semibold text-white">
+                            {new Intl.DateTimeFormat("id-ID", {
+                              dateStyle: "medium",
+                              timeStyle: "short",
+                              timeZone: "Asia/Jakarta",
+                            }).format(new Date(entry.savedAt))}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-base font-black text-orange-300">
+                            {formatCurrency(entry.totalSessionCost)}
+                          </p>
+                          <p className="text-xs text-white/45">total biaya</p>
+                        </div>
                       </div>
                     </div>
+                    <div className="mt-4 flex items-center justify-between gap-3">
+                      <Link
+                        href={`/history/${entry.id}`}
+                        onClick={() => setIsNavigating(true)}
+                        className="inline-flex items-center gap-2 rounded-full border border-orange-400/20 bg-orange-500/10 px-3 py-1.5 text-xs font-semibold text-orange-200"
+                      >
+                        <ExternalLink className="size-3.5" />
+                        Lihat detail
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => deleteSession(entry.id)}
+                        className="inline-flex items-center gap-1 rounded-full border border-red-400/20 bg-red-500/10 px-3 py-1.5 text-xs font-semibold text-red-300"
+                      >
+                        <Trash2 className="size-3.5" />
+                        Delete
+                      </button>
+                    </div>
                   </div>
-                  <div className="mt-4 flex items-center justify-between gap-3">
-                    <Link
-                      href={`/history/${entry.id}`}
-                      onClick={() => setIsNavigating(true)}
-                      className="inline-flex items-center gap-2 rounded-full border border-orange-400/20 bg-orange-500/10 px-3 py-1.5 text-xs font-semibold text-orange-200"
-                    >
-                      <ExternalLink className="size-3.5" />
-                      Lihat detail
-                    </Link>
-                    <button
-                      type="button"
-                      onClick={() => deleteSession(entry.id)}
-                      className="inline-flex items-center gap-1 rounded-full border border-red-400/20 bg-red-500/10 px-3 py-1.5 text-xs font-semibold text-red-300"
-                    >
-                      <Trash2 className="size-3.5" />
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
+                );
+              })
+            )}
+          </div>
         </section>
 
         <footer className="mt-6 pb-4 text-center text-xs uppercase tracking-[0.2em] text-white/40">

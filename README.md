@@ -1,6 +1,6 @@
 # Kockulator PT-PT
 
-Kockulator PT-PT adalah Progressive Web App (PWA) mobile-first untuk menghitung patungan badminton: biaya shuttlecock, sewa lapangan, total sesi, dan biaya per pemain.
+Kockulator PT-PT adalah Progressive Web App (PWA) mobile-first untuk menghitung patungan badminton: biaya shuttlecock, sewa lapangan, total sesi, biaya per pemain, dan dapat share ke whatsapp.
 
 Project ini dibuat dengan Next.js App Router, Tailwind CSS, dan `localStorage` untuk menyimpan riwayat sesi di device pengguna.
 
