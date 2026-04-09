@@ -16,6 +16,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { SplashScreen } from "@/components/splash-screen";
+import { SiteFooter } from "@/components/site-footer";
 
 type SessionRecord = {
   id: string;
@@ -516,9 +517,7 @@ export function PtPtCalculator() {
           </div>
         </section>
 
-        <footer className="mt-6 pb-4 text-center text-xs uppercase tracking-[0.2em] text-white/40">
-          Created by dandi setiyawan
-        </footer>
+        <SiteFooter />
       </main>
     </>
   );

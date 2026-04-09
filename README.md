@@ -108,4 +108,4 @@ Data hanya tersimpan di device/browser yang sama dan tidak tersinkron ke server.
 
 ## Kredit
 
-Created by dandi setiyawan
+© 2026 Dandi Setiyawan. Built with passion.
