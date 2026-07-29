@@ -4,12 +4,15 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import {
+  AlertCircle,
   ArrowLeft,
   CalendarDays,
   Clock3,
+  Download,
   Feather,
   Landmark,
   MessageCircleMore,
+  QrCode,
   Users,
   Wallet,
 } from "lucide-react";
@@ -33,6 +36,7 @@ type SessionRecord = {
   totalShuttlecockCost: number;
   totalSessionCost: number;
   costPerPlayer: number;
+  qrisImage?: string;
 };
 
 const STORAGE_KEY = "kockulator-session-history";
@@ -69,6 +73,9 @@ function escapeSvg(value: string) {
 }
 
 function buildReceiptSvg(record: SessionRecord) {
+  const hasQris = Boolean(record.qrisImage);
+  const svgHeight = hasQris ? 1760 : 1120;
+
   const lines = [
     ["Tanggal", formatDate(record.savedAt)],
     ["Harga slop", formatCurrency(record.shuttlecockTubePrice)],
@@ -80,7 +87,7 @@ function buildReceiptSvg(record: SessionRecord) {
       }`,
     ],
     ["Biaya kok", formatCurrency(record.totalShuttlecockCost)],
-    ["Biaya lapangan", formatCurrency(record.totalCourtCost)],
+    ["Biaya lapangan", formatCurrency(record.courtFeePerHour * record.hoursPlayed)],
     ["Jumlah pemain", `${formatNumber(record.players)} orang`],
     ["Rounding per orang", record.isPerPlayerRounded ? "Aktif" : "Tidak aktif"],
   ];
@@ -95,8 +102,18 @@ function buildReceiptSvg(record: SessionRecord) {
     )
     .join("");
 
+  const qrisSvgBlock = hasQris
+    ? `
+      <rect x="56" y="1120" width="768" height="580" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.12)" stroke-width="1.5" rx="24"/>
+      <text x="440" y="1168" fill="#FDBA74" font-size="26" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="700">Scan QRIS Pembayaran</text>
+      <text x="440" y="1204" fill="#FFFFFF" font-size="22" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="700">Tagihan: ${escapeSvg(formatCurrency(record.costPerPlayer))} / orang</text>
+      <rect x="190" y="1225" width="500" height="450" fill="#FFFFFF" rx="16"/>
+      <image href="${record.qrisImage}" x="200" y="1235" width="480" height="430" preserveAspectRatio="xMidYMid meet"/>
+    `
+    : "";
+
   return `
-    <svg xmlns="http://www.w3.org/2000/svg" width="880" height="1120" viewBox="0 0 880 1120">
+    <svg xmlns="http://www.w3.org/2000/svg" width="880" height="${svgHeight}" viewBox="0 0 880 ${svgHeight}">
       <defs>
         <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stop-color="#181818"/>
@@ -107,7 +124,7 @@ function buildReceiptSvg(record: SessionRecord) {
           <stop offset="100%" stop-color="rgba(249,115,22,0)"/>
         </radialGradient>
       </defs>
-      <rect width="880" height="1120" fill="url(#bg)"/>
+      <rect width="880" height="${svgHeight}" fill="url(#bg)"/>
       <rect width="880" height="210" fill="url(#glow)"/>
       <text x="56" y="88" fill="#FDBA74" font-size="26" font-family="Arial, Helvetica, sans-serif" font-weight="700">Kockulator PT-PT</text>
       <text x="56" y="142" fill="#F7F7F7" font-size="56" font-family="Arial, Helvetica, sans-serif" font-weight="900">E-Receipt Badminton</text>
@@ -124,11 +141,12 @@ function buildReceiptSvg(record: SessionRecord) {
         formatCurrency(record.costPerPlayer),
       )}</text>
       ${rows}
+      ${qrisSvgBlock}
     </svg>
   `;
 }
 
-async function svgToPngBlob(svgMarkup: string) {
+async function svgToPngBlob(svgMarkup: string, height = 1120) {
   const svgBlob = new Blob([svgMarkup], {
     type: "image/svg+xml;charset=utf-8",
   });
@@ -144,7 +162,7 @@ async function svgToPngBlob(svgMarkup: string) {
 
     const canvas = document.createElement("canvas");
     canvas.width = 880;
-    canvas.height = 1120;
+    canvas.height = height;
     const context = canvas.getContext("2d");
 
     if (!context) {
@@ -201,6 +219,78 @@ export function HistoryDetail({ id }: { id: string }) {
     };
   }, [id]);
 
+  async function downloadReceiptPng() {
+    if (!record) return;
+    try {
+      setIsSharing(true);
+      const svgHeight = record.qrisImage ? 1760 : 1120;
+      const pngBlob = await svgToPngBlob(buildReceiptSvg(record), svgHeight);
+      const imageUrl = URL.createObjectURL(pngBlob);
+      const downloadLink = document.createElement("a");
+      downloadLink.href = imageUrl;
+      downloadLink.download = `kockulator-receipt-${record.id}.png`;
+      downloadLink.click();
+      URL.revokeObjectURL(imageUrl);
+    } finally {
+      setIsSharing(false);
+    }
+  }
+
+  async function shareReceiptToWhatsapp() {
+    if (!record) return;
+    try {
+      setIsSharing(true);
+      const svgHeight = record.qrisImage ? 1760 : 1120;
+      const pngBlob = await svgToPngBlob(buildReceiptSvg(record), svgHeight);
+      const file = new File([pngBlob], `kockulator-receipt-${record.id}.png`, {
+        type: "image/png",
+      });
+
+      const messageText = `*Rincian Patungan Badminton*\nTotal Per Orang: ${formatCurrency(record.costPerPlayer)}${
+        record.qrisImage ? "\n(QRIS Pembayaran terlampir pada e-receipt)" : "\n(QRIS tidak diunggah)"
+      }`;
+
+      // Try native mobile share (which directly sends file + text to WhatsApp)
+      if (
+        typeof navigator !== "undefined" &&
+        navigator.canShare &&
+        navigator.canShare({ files: [file] }) &&
+        navigator.share
+      ) {
+        try {
+          await navigator.share({
+            title: "Patungan Badminton",
+            text: messageText,
+            files: [file],
+          });
+          return;
+        } catch (err: unknown) {
+          if (err instanceof Error && err.name === "AbortError") {
+            return;
+          }
+        }
+      }
+
+      // Desktop fallback: Download image & open WhatsApp with message
+      const imageUrl = URL.createObjectURL(file);
+      const downloadLink = document.createElement("a");
+      downloadLink.href = imageUrl;
+      downloadLink.download = file.name;
+      downloadLink.click();
+      URL.revokeObjectURL(imageUrl);
+
+      window.open(
+        `https://wa.me/?text=${encodeURIComponent(
+          `${messageText}\n\nE-receipt PNG telah terunduh (${file.name}). Lampirkan file receipt ini ke WhatsApp!`,
+        )}`,
+        "_blank",
+        "noopener,noreferrer",
+      );
+    } finally {
+      setIsSharing(false);
+    }
+  }
+
   if (!isMounted || showSplash) {
     return <SplashScreen label="Membuka detail sesi badminton..." />;
   }
@@ -223,45 +313,6 @@ export function HistoryDetail({ id }: { id: string }) {
         </section>
       </main>
     );
-  }
-
-  async function shareReceiptToWhatsapp() {
-    if (!record) return;
-    try {
-      setIsSharing(true);
-      const pngBlob = await svgToPngBlob(buildReceiptSvg(record));
-      const file = new File([pngBlob], `kockulator-receipt-${record.id}.png`, {
-        type: "image/png",
-      });
-
-      if (
-        navigator.canShare &&
-        navigator.canShare({ files: [file] }) &&
-        navigator.share
-      ) {
-        await navigator.share({
-          files: [file],
-        });
-        return;
-      }
-
-      const imageUrl = URL.createObjectURL(file);
-      const downloadLink = document.createElement("a");
-      downloadLink.href = imageUrl;
-      downloadLink.download = file.name;
-      downloadLink.click();
-      URL.revokeObjectURL(imageUrl);
-
-      window.open(
-        `https://wa.me/?text=${encodeURIComponent(
-          "E-receipt sudah diunduh. Tinggal lampirkan 1 gambar receipt ke WhatsApp.",
-        )}`,
-        "_blank",
-        "noopener,noreferrer",
-      );
-    } finally {
-      setIsSharing(false);
-    }
   }
 
   return (
@@ -355,7 +406,43 @@ export function HistoryDetail({ id }: { id: string }) {
             strong
           />
         </div>
-        <div className="mt-5 grid grid-cols gap-3">
+
+        {/* QRIS Image Section in History Detail */}
+        {record.qrisImage ? (
+          <div className="mt-5 flex flex-col items-center justify-center rounded-[28px] border border-orange-400/30 bg-black/40 p-5 text-center">
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-orange-300">
+              <QrCode className="size-4" />
+              <span>QRIS Pembayaran Terlampir</span>
+            </div>
+
+            <div className="mt-3 overflow-hidden rounded-2xl bg-white p-2 shadow-lg">
+              <img
+                src={record.qrisImage}
+                alt="QRIS Pembayaran"
+                className="size-48 object-contain"
+              />
+            </div>
+            <p className="mt-3 text-xs font-semibold text-orange-200">
+              Scan QRIS di atas untuk bayar: {formatCurrency(record.costPerPlayer)} / orang
+            </p>
+          </div>
+        ) : (
+          <div className="mt-5 flex items-center gap-3 rounded-[28px] border border-white/10 bg-black/20 p-4 text-white/50">
+            <AlertCircle className="size-5 text-orange-300/70" />
+            <p className="text-xs">QRIS tidak diunggah pada sesi ini.</p>
+          </div>
+        )}
+
+        <div className="mt-5 grid grid-cols-2 gap-3">
+          <button
+            type="button"
+            onClick={downloadReceiptPng}
+            disabled={isSharing}
+            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-sm font-bold text-white transition hover:bg-white/15 disabled:cursor-wait disabled:opacity-70"
+          >
+            <Download className="size-4" />
+            <span>Unduh PNG</span>
+          </button>
           <button
             type="button"
             onClick={shareReceiptToWhatsapp}
@@ -363,7 +450,7 @@ export function HistoryDetail({ id }: { id: string }) {
             className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#25D366] px-4 py-3 text-sm font-bold text-neutral-950 transition hover:scale-[1.01] active:scale-[0.99] disabled:cursor-wait disabled:opacity-70"
           >
             <MessageCircleMore className="size-4" />
-            {isSharing ? "Menyiapkan..." : "Share WhatsApp"}
+            {isSharing ? "Menyiapkan..." : "Share WA"}
           </button>
         </div>
       </section>

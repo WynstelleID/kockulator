@@ -1,4 +1,4 @@
-const CACHE_NAME = "kockulator-v2";
+const CACHE_NAME = "kockulator-v3";
 const APP_SHELL = [
   "/manifest.webmanifest",
   "/icons/icon-192.svg",
@@ -6,8 +6,9 @@ const APP_SHELL = [
 ];
 
 self.addEventListener("install", (event) => {
+  self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)).then(() => self.skipWaiting())
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL))
   );
 });
 
@@ -16,7 +17,11 @@ self.addEventListener("activate", (event) => {
     caches
       .keys()
       .then((keys) =>
-        Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key)))
+        Promise.all(
+          keys
+            .filter((key) => key !== CACHE_NAME)
+            .map((key) => caches.delete(key))
+        )
       )
       .then(() => self.clients.claim())
   );
@@ -28,45 +33,46 @@ self.addEventListener("fetch", (event) => {
   const requestUrl = new URL(event.request.url);
   if (!requestUrl.protocol.startsWith("http")) return;
 
-  // Always prefer the network for page navigations so new Netlify deploys
-  // show up immediately without requiring users to clear cache manually.
+  // Always prefer network for page navigation so HTML gets fresh JS chunk hashes
   if (event.request.mode === "navigate") {
     event.respondWith(
-      fetch(event.request)
-        .then((response) => response)
-        .catch(() => caches.match("/") || caches.match("/manifest.webmanifest"))
+      fetch(event.request).catch(() =>
+        caches.match("/").then((res) => res || caches.match("/manifest.webmanifest"))
+      )
     );
     return;
   }
 
-  const isStaticAsset =
-    requestUrl.pathname.startsWith("/_next/static/") ||
-    requestUrl.pathname.startsWith("/icons/") ||
-    requestUrl.pathname === "/manifest.webmanifest";
+  // Network-First for Next.js assets so new code updates immediately on deploy
+  if (requestUrl.pathname.startsWith("/_next/")) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          if (response.ok) {
+            const cloned = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, cloned));
+          }
+          return response;
+        })
+        .catch(() => caches.match(event.request))
+    );
+    return;
+  }
 
+  // Stale-While-Revalidate for other static assets
   event.respondWith(
     caches.match(event.request).then((cached) => {
-      if (cached && isStaticAsset) return cached;
-
-      return fetch(event.request)
+      const networkFetch = fetch(event.request)
         .then((response) => {
-          if (!response.ok || !response.url.startsWith("http")) {
-            return response;
-          }
-
-          if (isStaticAsset) {
+          if (response.ok) {
             const cloned = response.clone();
-            caches
-              .open(CACHE_NAME)
-              .then((cache) => cache.put(event.request, cloned))
-              .catch(() => {
-                // Ignore unsupported schemes such as browser extension assets.
-              });
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, cloned));
           }
-
           return response;
         })
         .catch(() => cached);
+
+      return cached || networkFetch;
     })
   );
 });
