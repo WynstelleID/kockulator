@@ -206,7 +206,7 @@ export function PtPtCalculator() {
   const [isMounted, setIsMounted] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
   const [isNavigating, setIsNavigating] = useState(false);
-  const [tubePrice, setTubePrice] = useState("135.000");
+  const [pricePerCock, setPricePerCock] = useState("11.250");
   const [roundedPrice, setRoundedPrice] = useState("0");
   const [usedShuttlecocks, setUsedShuttlecocks] = useState("6");
   const [isShuttlecockSponsored, setIsShuttlecockSponsored] = useState(false);
@@ -269,8 +269,9 @@ export function PtPtCalculator() {
   }
 
   const calculations = useMemo(() => {
-    const shuttlecockTubePrice = toSafeNumber(tubePrice);
-    const autoPricePerCock = shuttlecockTubePrice / 12;
+    const autoPricePerCock = toSafeNumber(pricePerCock);
+    const shuttlecockTubePrice = autoPricePerCock * 12;
+    const halfTubePrice = autoPricePerCock * 6;
     const manualRoundedPrice = toSafeNumber(roundedPrice);
     const roundedPricePerCock =
       manualRoundedPrice > 0 ? manualRoundedPrice : autoPricePerCock;
@@ -290,6 +291,7 @@ export function PtPtCalculator() {
 
     return {
       shuttlecockTubePrice,
+      halfTubePrice,
       autoPricePerCock,
       roundedPricePerCock,
       used,
@@ -305,7 +307,7 @@ export function PtPtCalculator() {
       costPerPlayer,
     };
   }, [
-    tubePrice,
+    pricePerCock,
     roundedPrice,
     usedShuttlecocks,
     isShuttlecockSponsored,
@@ -393,24 +395,35 @@ function generateSafeId(): string {
 
         <section className="mt-5 grid gap-4">
           <Field
-            label="Harga 1 slop"
-            hint="1 slop = 12 shuttlecock"
+            label="Harga per kok"
+            hint="Harga 1 shuttlecock"
             icon={<Feather className="size-5" />}
-            value={tubePrice}
-            onChange={(value) => setTubePrice(formatIntegerInput(value))}
+            value={pricePerCock}
+            onChange={(value) => setPricePerCock(formatIntegerInput(value))}
             type="text"
             inputMode="numeric"
           />
           <div className="rounded-[28px] border border-white/10 bg-linear-to-br from-white/[0.07] to-white/4 p-4 shadow-[0_16px_40px_rgba(0,0,0,0.2)]">
             <p className="text-sm font-semibold text-white">
-              Harga per kok otomatis
+              Harga slop otomatis
             </p>
-            <p className="mt-2 text-3xl font-black text-orange-300">
-              {formatCurrency(calculations.autoPricePerCock)}
-            </p>
-            <p className="mt-2 text-xs leading-5 text-white/50">
-              Rumus: harga slop / 12. Kamu bisa override di field bawah kalau
-              ingin dibulatkan manual.
+            <div className="mt-3 grid grid-cols-2 gap-3">
+              <div className="rounded-2xl border border-white/10 bg-black/30 p-3">
+                <p className="text-xs font-semibold text-white/60">12 kok (1 slop)</p>
+                <p className="mt-1 text-xl font-black text-orange-300">
+                  {formatCurrency(calculations.shuttlecockTubePrice)}
+                </p>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-black/30 p-3">
+                <p className="text-xs font-semibold text-white/60">6 kok (½ slop)</p>
+                <p className="mt-1 text-xl font-black text-orange-300">
+                  {formatCurrency(calculations.halfTubePrice)}
+                </p>
+              </div>
+            </div>
+            <p className="mt-3 text-xs leading-5 text-white/50">
+              Rumus: harga per kok x 12 dan x 6. Kamu bisa override harga per
+              kok di field bawah kalau ingin dibulatkan manual.
             </p>
           </div>
           <Field

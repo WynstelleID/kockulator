@@ -97,7 +97,7 @@ function buildReceiptSvg(record: SessionRecord) {
       ([label, value], index) => `
         <text x="56" y="${250 + index * 72}" fill="#A3A3A3" font-size="24" font-family="Arial, Helvetica, sans-serif">${escapeSvg(label)}</text>
         <text x="824" y="${250 + index * 72}" fill="#F7F7F7" font-size="24" text-anchor="end" font-family="Arial, Helvetica, sans-serif" font-weight="700">${escapeSvg(value)}</text>
-        <line x1="56" y1="${275 + index * 72}" x2="824" y2="${255 + index * 72}" stroke="rgba(255,255,255,0.06)" stroke-width="1" />
+        <line x1="56" y1="${275 + index * 72}" x2="824" y2="${275 + index * 72}" stroke="rgba(255,255,255,0.06)" stroke-width="1" />
       `,
     )
     .join("");
